@@ -1445,7 +1445,7 @@ sub blank_report
 		$creater = $sheet-> Cells($i,$TASK_CREATER)->{'Value'};
 
 		# 处理 tl 为空的情况
-		my $str_ref = sprintf (scalar($sheet-> Cells($i,$TASK_TL)->{'Value'}));
+		my $str_ref = scalar($sheet-> Cells($i,$TASK_TL)->{'Value'});
 		if ( "$str_ref" =~ /^-[0-9]+$/){
 			$tl = '#N/A';
 		}
@@ -1649,7 +1649,7 @@ sub blank_report
 			$sheet_rs -> Range("A$tag")->{'Value'} = $m;
 			$sheet_rs -> Range("B$tag")->{'Value'} = $k;
 			$sheet_rs -> Range("C$tag")->{'Value'} = $tmp_count;
-			$sheet_rs -> Range("D$tag")->{'Value'} = $n->{3};
+			$sheet_rs -> Range("D$tag")->{'Value'} = sprintf("%u",$n->{3});
 			if($tmp_count == 0){
 				$sheet_rs -> Range("E$tag")->{'Value'} = 0;
 			} else {
@@ -1675,18 +1675,28 @@ sub blank_report
 		my $tmp_count_g = $v->{'1'}+$v->{'3'};
 		$sheet_rs -> Range("A$tag")->{'Value'} = $k;
 		$sheet_rs -> Range("B$tag")->{'Value'} = $v->{'0'};
-		$sheet_rs -> Range("C$tag")->{'Value'} = $v->{'2'};
+		$sheet_rs -> Range("C$tag")->{'Value'} = sprintf("%u",$v->{'2'});
 		$sheet_rs -> Range("D$tag")->{'Value'} = $tmp_count_g;
-		$sheet_rs -> Range("E$tag")->{'Value'} = $v->{'1'};
-		$sheet_rs -> Range("F$tag")->{'Value'} = $v->{'3'};
+		$sheet_rs -> Range("E$tag")->{'Value'} = sprintf("%u",$v->{'1'});
+		$sheet_rs -> Range("F$tag")->{'Value'} = sprintf("%u",$v->{'3'});
 		if($tmp_count_g == 0){
 			$sheet_rs -> Range("G$tag")->{'Value'} = 0;
 		} else {
 			$sheet_rs -> Range("G$tag")->{'Value'} = $v->{'3'}/$tmp_count_g;
 		}
-		$sheet_rs -> Range("H$tag")->{'Value'} = '';
+		$sheet_rs -> Range("H$tag")->{'Value'} = sprintf("%u",$v->{'3'});
 		$tag++;
 	}
+	my $tag_1 = $tag - 1;
+	$sheet_rs -> Range("A$tag")->{'Value'} = encode('gbk','汇总');
+	$sheet_rs -> Range("B$tag")->{'Value'} = "=SUM(B2:B$tag_1)";
+	$sheet_rs -> Range("C$tag")->{'Value'} = "=SUM(C2:C$tag_1)";
+	$sheet_rs -> Range("D$tag")->{'Value'} = "=SUM(D2:D$tag_1)";
+	$sheet_rs -> Range("E$tag")->{'Value'} = "=SUM(E2:E$tag_1)";
+	$sheet_rs -> Range("F$tag")->{'Value'} = "=SUM(F2:F$tag_1)";
+	$sheet_rs -> Range("G$tag")->{'Value'} = "=F$tag/D$tag";
+	$sheet_rs -> Range("H$tag")->{'Value'} = "=SUM(H2:H$tag_1)";
+	
 	$sheet_rs -> Rows -> {RowHeight} = 18;
 	$sheet_rs -> Columns -> {Font} -> {Name} = 'Calibri';
 	$sheet_rs -> Columns -> {Font} -> {Size} = 10;
