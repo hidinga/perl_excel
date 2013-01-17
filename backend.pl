@@ -1638,7 +1638,7 @@ sub blank_report
 	$sheet_rs->{'NAME'} = encode('gbk','个人汇总');
 	$sheet_rs -> Range('A1:E1') -> {'Value'} = [@person_title_gbk];
 	$sheet_rs -> Columns('E') -> {'NumberFormatLocal'} = "0.00%";
-
+	
 	$tag = 2;
 	while (($k, $v)=each $data)
 	{
@@ -1671,22 +1671,26 @@ sub blank_report
 	$sheet_rs -> Range('A1:H1') -> {'Value'} = [@data_title_gbk];
 	$sheet_rs -> Columns('G') -> {'NumberFormatLocal'} = "0.00%";
 	
+	my $tmp_sort_ref;
+	while (($k, $v)=each $data) {
+		$tmp_sort_ref->{$k} = sprintf("%f", $v->{'3'}/($v->{'1'}+$v->{'3'}));
+	}
+	my @KEYS = sort {$tmp_sort_ref->{$b} <=> $tmp_sort_ref->{$a}} keys($tmp_sort_ref);
 	$tag = 2;
-	while (($k, $v)=each $data)
-	{
-		my $tmp_count_g = $v->{'1'}+$v->{'3'};
-		$sheet_rs -> Range("A$tag")->{'Value'} = $k;
-		$sheet_rs -> Range("B$tag")->{'Value'} = $v->{'0'};
-		$sheet_rs -> Range("C$tag")->{'Value'} = sprintf("%u",$v->{'2'});
+	foreach my $key (@KEYS){
+		my $tmp_count_g = $data->{$key}->{'3'}+$data->{$key}->{'1'};
+		$sheet_rs -> Range("A$tag")->{'Value'} = $key;
+		$sheet_rs -> Range("B$tag")->{'Value'} = $data->{$key}->{'0'};
+		$sheet_rs -> Range("C$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'2'});
 		$sheet_rs -> Range("D$tag")->{'Value'} = $tmp_count_g;
-		$sheet_rs -> Range("E$tag")->{'Value'} = sprintf("%u",$v->{'1'});
-		$sheet_rs -> Range("F$tag")->{'Value'} = sprintf("%u",$v->{'3'});
+		$sheet_rs -> Range("E$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'1'});
+		$sheet_rs -> Range("F$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'3'});
 		if($tmp_count_g == 0){
 			$sheet_rs -> Range("G$tag")->{'Value'} = 0;
 		} else {
-			$sheet_rs -> Range("G$tag")->{'Value'} = $v->{'3'}/$tmp_count_g;
+			$sheet_rs -> Range("G$tag")->{'Value'} = $data->{$key}->{'3'}/$tmp_count_g;
 		}
-		$sheet_rs -> Range("H$tag")->{'Value'} = sprintf("%u",$v->{'3'});
+		$sheet_rs -> Range("H$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'3'});
 		$tag++;
 	}
 	my $tag_1 = $tag - 1;
