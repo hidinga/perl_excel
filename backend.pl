@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# Author : ping.bao.cn@gmail.com
 
 use POSIX qw(strftime);
 use Time::HiRes qw(gettimeofday);
@@ -12,7 +13,6 @@ use strict;
 use Getopt::Long;
 
 my $cur_dir;
-
 my $USER_XLS_PATH;
 my $USER_XLS_SHEET_NAME;
 my $USER_XLS_HEADER_ROW;
@@ -57,13 +57,17 @@ $cur_dir = dirname($0);
 chdir($cur_dir);
 
 my $xls_type;
-GetOptions ("t|type=s" => \$xls_type);
-if ($xls_type !~ /^(agent)|(callback)|(shifts)|(blank)$/)
-{
-	print "\nusage : -t [agent|callback|shifts|blank]\n";
+GetOptions ("t|type=s" => \$xls_type, "v|version|V!");
+
+if (our $opt_v) {
+	print "\nVersion : 1.0.1\n";
 	exit;	
 }
-
+if ($xls_type !~ /^(agent)|(callback)|(shifts)|(blank)$/) {
+	print "\nusage : -t [agent|callback|shifts|blank]";
+	print "\n        -v\n";
+	exit;
+}
 print strftime("%Y-%m-%d %H:%M:%S", localtime())," : STARTING ...\n";
 
 if( ! -e 'config.ini') {
@@ -208,8 +212,7 @@ while (<FH>)
 	}
 }
 
-my $excel;
-$excel = CreateObject Win32::OLE 'Excel.Application' or die ('ERROR : Microsoft Excel NOT FOUND ...');
+my $excel = CreateObject Win32::OLE 'Excel.Application' or die ('ERROR : Microsoft Excel NOT FOUND ...');
 $excel -> {'EnableEvents'} = 0;
 
 if ($xls_type eq 'agent') {
@@ -267,10 +270,7 @@ sub error_found
 	exit;
 }
 
-#
-#  author : ping.bao.cn@jsvest.com
 #  parameter : $XLS_PATH  $SHEET_NAME $HEADER_ROW [01]
-# 
 
 sub get_agent_infomation
 {
@@ -1346,9 +1346,7 @@ sub blank_report
 {
 	my $TASK_INFO;
 	my @KEYS;
-	my $s_time;
-	my $e_time;	
-	$s_time = gettimeofday();
+	my $s_time = gettimeofday();
 	
 	my $TASK_ID;
 	my $ITEM_ID;
@@ -1373,6 +1371,11 @@ sub blank_report
 	my $data;
 	my $tl;
 	my $creater;
+	my $str_ref;
+	my $tmp_type;
+	my $tmp_buniess_type;
+	my $tmp_nickneme;
+	my $UUID;
 	
 	$excel -> {'Visible'} = 0;
 	$workbook = $excel -> Workbooks -> Open($BLANK_XLS_PATH, 1);
@@ -1393,9 +1396,7 @@ sub blank_report
 	for (my $i=1; $i<=$used_count; $i++)
 	{
 		my $temp_val = decode('gbk', $sheet->Cells(1,$i)->{'Value'});
-		
 		Encode::_utf8_on($temp_val);
-
 		if ($temp_val eq (BLANK_STATUS_LIST)[0]) {
 			$TASK_ID = $i;
 		} elsif ($temp_val eq (BLANK_STATUS_LIST)[1]) {
@@ -1437,41 +1438,43 @@ sub blank_report
 
 	for ( my $i=1+1; $i<=$used_rows; $i++)
 	{
-		my $UUID = $sheet-> Cells($i,1)->{'Value'};
-		
-		($UUID eq '') and next;
-		
+	
 		$tl = $sheet-> Cells($i,$TASK_TL)->{'Value'};
-		$creater = $sheet-> Cells($i,$TASK_CREATER)->{'Value'};
-
+		$tmp_nickneme = $sheet-> Cells($i,$NICKNAME)->{'Value'};
+		
 		# 处理 tl 为空的情况
-		my $str_ref = scalar($sheet-> Cells($i,$TASK_TL)->{'Value'});
+		
+		$str_ref = scalar($sheet-> Cells($i,$TASK_TL)->{'Value'});
 		if ( "$str_ref" =~ /^-[0-9]+$/){
 			$tl = '#N/A';
 		}
 
 		# 有会员名记数
-		if ($sheet-> Cells($i,$NICKNAME)->{'Value'} =~ /\S/){
+		if ( $tmp_nickneme =~ /\S/){
 			$data->{$tl}->{0} += 1;
 			next;
 		}
 		
-		my $tmp_type = decode('gbk', $sheet-> Cells($i,$TASK_BUESSINESS_TYPE)->{'Value'});
+		# 会员编号为空
+		$UUID = $sheet-> Cells($i,1)->{'Value'};
+		($UUID eq '') and next;
+		
+		$tmp_buniess_type = $sheet-> Cells($i,$TASK_BUESSINESS_TYPE)->{'Value'};
+		$tmp_type = decode('gbk', $tmp_buniess_type);
 		Encode::_utf8_on($tmp_type);
 		
 		if ($tmp_type =~ /无效电话/) {
 			$data->{$tl}->{2} += 1;
-			$data->{$tl}->{9}->{$creater}->{2} += 1;
 			next;
 		}
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_ID'} = $sheet-> Cells($i,$TASK_ID)->{'Value'};
 		$TASK_INFO ->{$i} -> {$UUID} -> {'ITEM_ID'} = $sheet-> Cells($i,$ITEM_ID)->{'Value'};
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_SRC'} = $sheet-> Cells($i,$TASK_SRC)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'NICKNAME'} = $sheet-> Cells($i,$NICKNAME)->{'Value'};
+		$TASK_INFO ->{$i} -> {$UUID} -> {'NICKNAME'} = $tmp_nickneme;
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_STATUS'} = $sheet-> Cells($i,$TASK_STATUS)->{'Value'};
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_TITLE'} = $sheet-> Cells($i,$TASK_TITLE)->{'Value'};
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_PER'} = $sheet-> Cells($i,$TASK_PER)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_CREATER'} = $sheet-> Cells($i,$TASK_CREATER)->{'Value'};
+		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_CREATER'} = $sheet-> Cells($i,$TASK_CREATER)->{'Value'};;
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_CREATE_DATE'} = $sheet-> Cells($i,$TASK_CREATE_DATE)->{'Value'};
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_EXECUTER'} = $sheet-> Cells($i,$TASK_EXECUTER)->{'Value'};
 		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_TL'} = $tl;
@@ -1484,8 +1487,7 @@ sub blank_report
 	}
 	$workbook -> Close({SaveChanges => 0});
 	
-	$e_time = gettimeofday();
-
+	my $e_time = gettimeofday();
 	if (defined($TASK_INFO)) {
 		print strftime("%Y-%m-%d %H:%M:%S", localtime())," : parse successfully ...";
 		printf ("(%0.3fs)\n",($e_time-$s_time));
@@ -1526,17 +1528,21 @@ sub blank_report
 	$sheet_rs->{'NAME'} = encode('gbk','正确注解');
 
 	$sheet_rs -> Range('A1:Q1') -> {'Value'} = [@sheet_title];
+	
 	# 边框
 	#$sheet_rs -> Range('A1:Q1') -> {Borders} -> {LineStyle} = 1;
-	#$sheet_rs -> Range('A1:J1') -> {Borders} -> {Color} = 0x000000;
+	#$sheet_rs -> Range('A1:Q1') -> {Borders} -> {Color} = 0x000000;
+	
 	# 数据格式
 	$sheet_rs -> Columns('A') -> {'NumberFormatLocal'} = "@";
+	$sheet_rs -> Columns('B') -> {'NumberFormatLocal'} = "@";
 	#$sheet_rs -> Columns('H') -> {'NumberFormatLocal'} = "0.0%";
+	
 	$tag = 2;
 	foreach my $key (@KEYS){
 		while (($k, $v)=each $TASK_INFO->{$key})
 		{
-			if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple)) {
+			if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) or ($v->{'TASK_TITLE'} =~ /^\s*$/)) {
 				$sheet_rs -> Range("A$tag")->{'Value'} = $k;
 				$sheet_rs -> Range("B$tag")->{'Value'} = $v->{'ITEM_ID'};
 				$sheet_rs -> Range("C$tag")->{'Value'} = $v->{'TASK_SRC'};
@@ -1556,17 +1562,13 @@ sub blank_report
 				$sheet_rs -> Range("Q$tag")->{'Value'} = $v->{'TASK_HAS_USERID'};
 				if (map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) {
 					$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0x00C0FF;
-					$data->{$v->{'TASK_TL'}}->{1} += 1;
-					$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{1} += 1;
 				} elsif (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) {
 					$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0x59BB9B;
-					$data->{$v->{'TASK_TL'}}->{1} += 1;
-					$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{1} += 1;
 				} elsif (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) {
 					$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0xA03070;
-					$data->{$v->{'TASK_TL'}}->{1} += 1;
-					$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{1} += 1;
 				}
+				$data->{$v->{'TASK_TL'}}->{1} += 1;
+				$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{1} += 1;	
 				$tag++;
 			} else {
 				$data->{$v->{'TASK_TL'}}->{3} += 1;
@@ -1578,7 +1580,10 @@ sub blank_report
 	# 0 有会员名
 	# 1 正确注解
 	# 2 无效电话
-	# 3 无效注解
+	# 3 错误注解
+	# 9 -> 1 正确注解
+	# 9 -> 2 无效电话
+	# 9 -> 3 错误注解
 	
 	# 样式
 	$sheet_rs -> Rows -> {RowHeight} = 18;
@@ -1593,12 +1598,9 @@ sub blank_report
 	# 错误注解
 	$sheet_rs =  $workbook_rs -> Worksheets(3);
 	$sheet_rs->{'NAME'} = encode('gbk','错误注解');
-	
 	$sheet_rs -> Range('A1:Q1') -> {'Value'} = [@sheet_title];
-
 	$sheet_rs -> Columns('A') -> {'NumberFormatLocal'} = "@";
 	$sheet_rs -> Columns('B') -> {'NumberFormatLocal'} = "@";
-	#$sheet_rs -> Columns('H') -> {'NumberFormatLocal'} = "0.0%";
 	
 	$tag = 2;
 	foreach my $key (@KEYS){
