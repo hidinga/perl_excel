@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+
 # Author : ping.bao.cn@gmail.com
 
 use POSIX qw(strftime);
@@ -1589,6 +1590,8 @@ sub blank_report
 	$sheet_rs -> Rows -> {RowHeight} = 18;
 	$sheet_rs -> Columns -> {Font} -> {Name} = 'Calibri';
 	$sheet_rs -> Columns -> {Font} -> {Size} = 10;
+	$sheet_rs -> Columns -> AutoFilter();
+	
 	# $sheet_rs -> Rows(1) -> {WrapText} = 1;
 	# $sheet_rs -> Range('A1:U1') -> {RowHeight} = 40;
 
@@ -1632,6 +1635,7 @@ sub blank_report
 	$sheet_rs -> Rows -> {RowHeight} = 18;
 	$sheet_rs -> Columns -> {Font} -> {Name} = 'Calibri';
 	$sheet_rs -> Columns -> {Font} -> {Size} = 10;
+	$sheet_rs -> Columns -> AutoFilter();
 		
 	# 个人汇总
 	$sheet_rs =  $workbook_rs -> Worksheets(1);
@@ -1672,6 +1676,7 @@ sub blank_report
 	$sheet_rs -> Rows -> {RowHeight} = 18;
 	$sheet_rs -> Columns -> {Font} -> {Name} = 'Calibri';
 	$sheet_rs -> Columns -> {Font} -> {Size} = 10;
+	$sheet_rs -> Columns -> AutoFilter();
 	$sheet_rs -> Columns -> AutoFit();
 	
 	# 全局统计
@@ -1681,24 +1686,24 @@ sub blank_report
 	$sheet_rs -> Columns('G') -> {'NumberFormatLocal'} = "0.00%";
 	
 	my $tmp_sort_ref;
-	while (($k, $v)=each $data) {
-		$tmp_sort_ref->{$k} = sprintf("%f", $v->{'3'}/($v->{'1'}+$v->{'3'}));
+	while (($k, $v) = each $data) {
+		my $tmp_sort_cnt = $v->{'1'}+$v->{'3'};
+		if ($tmp_sort_cnt == 0){
+			$tmp_sort_ref->{$k} = 0;
+		} else {
+			$tmp_sort_ref->{$k} = sprintf("%f", $v->{'3'}/$tmp_sort_cnt);
+		}	
 	}
 	my @KEYS = sort {$tmp_sort_ref->{$b} <=> $tmp_sort_ref->{$a}} keys($tmp_sort_ref);
 	$tag = 2;
 	foreach my $key (@KEYS){
-		my $tmp_count_g = $data->{$key}->{'3'}+$data->{$key}->{'1'};
 		$sheet_rs -> Range("A$tag")->{'Value'} = $key;
-		$sheet_rs -> Range("B$tag")->{'Value'} = $data->{$key}->{'0'};
+		$sheet_rs -> Range("B$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'0'});
 		$sheet_rs -> Range("C$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'2'});
-		$sheet_rs -> Range("D$tag")->{'Value'} = $tmp_count_g;
+		$sheet_rs -> Range("D$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'3'}+$data->{$key}->{'1'});
 		$sheet_rs -> Range("E$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'1'});
 		$sheet_rs -> Range("F$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'3'});
-		if($tmp_count_g == 0){
-			$sheet_rs -> Range("G$tag")->{'Value'} = 0;
-		} else {
-			$sheet_rs -> Range("G$tag")->{'Value'} = $data->{$key}->{'3'}/$tmp_count_g;
-		}
+		$sheet_rs -> Range("G$tag")->{'Value'} = $tmp_sort_ref->{$key};
 		$sheet_rs -> Range("H$tag")->{'Value'} = sprintf("%u",$data->{$key}->{'3'});
 		$tag++;
 	}
