@@ -60,7 +60,7 @@ my $xls_type;
 GetOptions ("t|type=s" => \$xls_type, "v|version|V!");
 
 if (our $opt_v) {
-	print "\nVersion : 1.0.2\n";
+	print "\nVersion : 1.0.3\n";
 	exit;	
 }
 if ($xls_type !~ /^(agent)|(callback)|(shifts)|(blank)$/) {
@@ -1506,7 +1506,7 @@ sub blank_report
 		unlink $xls_doc_rs if (-e "$xls_doc_rs");
 	};
 
-	# 处理
+	# 正解注解
 	my $k;
 	my $v;
 	my $tag;
@@ -1606,7 +1606,7 @@ sub blank_report
 	foreach my $key (@KEYS){
 		while (($k, $v)=each $TASK_INFO->{$key})
 		{
-			if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple)) {
+			if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) or ($v->{'TASK_TITLE'} =~ /^\s*$/)) {
 				next;
 			}
 			$sheet_rs -> Range("A$tag")->{'Value'} = $k;
