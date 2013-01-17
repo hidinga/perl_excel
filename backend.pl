@@ -60,7 +60,7 @@ my $xls_type;
 GetOptions ("t|type=s" => \$xls_type, "v|version|V!");
 
 if (our $opt_v) {
-	print "\nVersion : 1.0.1\n";
+	print "\nVersion : 1.0.2\n";
 	exit;	
 }
 if ($xls_type !~ /^(agent)|(callback)|(shifts)|(blank)$/) {
