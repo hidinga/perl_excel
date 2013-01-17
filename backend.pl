@@ -1639,26 +1639,35 @@ sub blank_report
 	$sheet_rs -> Range('A1:E1') -> {'Value'} = [@person_title_gbk];
 	$sheet_rs -> Columns('E') -> {'NumberFormatLocal'} = "0.00%";
 	
-	$tag = 2;
+	
+	my $tmp_sort_res;
+	my $tmp_res;
+	$tag = 1;
 	while (($k, $v)=each $data)
 	{
 		if(!$v->{9}){
 			next;
 		}
-		while ((my $m, my $n)=each $v->{9})
-		{
-			my $tmp_count = $n->{1}+$n->{3};
-			$sheet_rs -> Range("A$tag")->{'Value'} = $m;
-			$sheet_rs -> Range("B$tag")->{'Value'} = $k;
-			$sheet_rs -> Range("C$tag")->{'Value'} = $tmp_count;
-			$sheet_rs -> Range("D$tag")->{'Value'} = sprintf("%u",$n->{3});
-			if($tmp_count == 0){
-				$sheet_rs -> Range("E$tag")->{'Value'} = 0;
-			} else {
-				$sheet_rs -> Range("E$tag")->{'Value'} = $n->{3}/$tmp_count;
-			}
+		while ((my $q, my $r)=each $v->{9}) {
+			$tmp_sort_res->{$tag}->{0} = $k;
+			$tmp_sort_res->{$tag}->{1} = $q;
+			$tmp_sort_res->{$tag}->{2} = $r->{1}+$r->{3};
+			$tmp_sort_res->{$tag}->{3} = $r->{3};
+			$tmp_res->{$tag} = sprintf("%f",$r->{3}/($r->{1}+$r->{3}));
 			$tag++;
 		}
+	}
+	my @KEYS = sort {$tmp_res->{$b} <=> $tmp_res->{$a}} keys($tmp_res);
+	
+	$tag = 2;
+	foreach my $key (@KEYS)
+	{
+		$sheet_rs -> Range("A$tag")->{'Value'} = $tmp_sort_res->{$key}->{0};
+		$sheet_rs -> Range("B$tag")->{'Value'} = $tmp_sort_res->{$key}->{1};
+		$sheet_rs -> Range("C$tag")->{'Value'} = $tmp_sort_res->{$key}->{2};
+		$sheet_rs -> Range("D$tag")->{'Value'} = sprintf("%u",$tmp_sort_res->{$key}->{3});
+		$sheet_rs -> Range("E$tag")->{'Value'} = $tmp_res->{$key};
+		$tag++;
 	}
 	$sheet_rs -> Rows -> {RowHeight} = 18;
 	$sheet_rs -> Columns -> {Font} -> {Name} = 'Calibri';
