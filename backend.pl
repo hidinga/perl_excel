@@ -1164,7 +1164,6 @@ sub callback_report
 	print strftime("%Y-%m-%d %H:%M:%S", localtime())," : Save Result To $xls_doc_rs";
 }
 
-
 #################################### SHIFTS ###########################################
 
 sub shifts_report
@@ -1224,7 +1223,7 @@ sub shifts_report
 	$sheet_rs -> Range('A1:U1') -> {Borders} -> {LineStyle} = 1;
 	$sheet_rs -> Range('A1:U1') -> {Borders} -> {Color} = 0x000000;
 
-	# 数据格式
+	# 格式
 	$sheet_rs -> Columns('T') -> {'NumberFormatLocal'} = "0.00%";
 	$sheet_rs -> Columns('U') -> {'NumberFormatLocal'} = "0.00%";
 
@@ -1241,10 +1240,7 @@ sub shifts_report
 				next;
 			}
 			$err_status = 0;
-			# print strftime("%Y-%m-%d %H:%M:%S", localtime())," : Filling $k ...\n";
-
 			my $TOTAL_ADD = $v->{'AcdAgentNotAnswering'} + $v->{'ACW'} + $v->{'ACW_Manual'} + $v->{'Available'} + $v->{'Away_from_desk'} + $v->{'Do_Not_disturb'};
-
 			if ($TOTAL_ADD < $SHIFTS_XLS_IGNORE_SEC){
 				next;
 			}
@@ -1270,7 +1266,6 @@ sub shifts_report
 			$sheet_rs -> Range("T$tag")->{'Value'} = $v->{'Do_Not_disturb'} / $TOTAL_ADD;
 			$sheet_rs -> Range("U$tag")->{'Value'} = ($v->{'ACW'} + $v->{'Do_Not_disturb'}) / $TOTAL_ADD;
 
-			# STYLE
 			$sheet_rs -> Range("A$tag") -> {Interior} -> {Color} = 0xb2b2b2;
 			$sheet_rs -> Range("A$tag") -> {Font} -> {Color} = 0xFFFFFF;
 			$sheet_rs -> Range("A$tag") -> {Font} -> {Bold} = 1;
@@ -1393,7 +1388,6 @@ sub blank_report
 	}
 
 	# 映射
-	
 	for (my $i=1; $i<=$used_count; $i++)
 	{
 		my $temp_val = decode('gbk', $sheet->Cells(1,$i)->{'Value'});
@@ -1439,7 +1433,6 @@ sub blank_report
 
 	for ( my $i=1+1; $i<=$used_rows; $i++)
 	{
-	
 		$tl = $sheet-> Cells($i,$TASK_TL)->{'Value'};
 		$tmp_nickneme = $sheet-> Cells($i,$NICKNAME)->{'Value'};
 		
@@ -1457,7 +1450,7 @@ sub blank_report
 		}
 		
 		# 会员编号为空
-		$UUID = $sheet-> Cells($i,1)->{'Value'};
+		$UUID = $sheet-> Cells($i,$TASK_ID)->{'Value'};
 		($UUID eq '') and next;
 		
 		$tmp_buniess_type = $sheet-> Cells($i,$TASK_BUESSINESS_TYPE)->{'Value'};
@@ -1468,23 +1461,23 @@ sub blank_report
 			$data->{$tl}->{2} += 1;
 			next;
 		}
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_ID'} = $sheet-> Cells($i,$TASK_ID)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'ITEM_ID'} = $sheet-> Cells($i,$ITEM_ID)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_SRC'} = $sheet-> Cells($i,$TASK_SRC)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'NICKNAME'} = $tmp_nickneme;
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_STATUS'} = $sheet-> Cells($i,$TASK_STATUS)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_TITLE'} = $sheet-> Cells($i,$TASK_TITLE)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_PER'} = $sheet-> Cells($i,$TASK_PER)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_CREATER'} = $sheet-> Cells($i,$TASK_CREATER)->{'Value'};;
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_CREATE_DATE'} = $sheet-> Cells($i,$TASK_CREATE_DATE)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_EXECUTER'} = $sheet-> Cells($i,$TASK_EXECUTER)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_TL'} = $tl;
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_PROCESS_DATE'} = $sheet-> Cells($i,$TASK_PROCESS_DATE)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_PLAN_DATE'} = $sheet-> Cells($i,$TASK_PLAN_DATE)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_NOTIFY_DATE'} = $sheet-> Cells($i,$TASK_NOTIFY_DATE)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_BUESSINESS_TYPE'} = $sheet-> Cells($i,$TASK_BUESSINESS_TYPE)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_ISSUESS_TYPE'} = $sheet-> Cells($i,$TASK_ISSUESS_TYPE)->{'Value'};
-		$TASK_INFO ->{$i} -> {$UUID} -> {'TASK_HAS_USERID'} = $sheet-> Cells($i,$TASK_HAS_USERID)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_ID'} = $UUID;
+		$TASK_INFO ->{$i} -> {'ITEM_ID'} = $sheet-> Cells($i,$ITEM_ID)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_SRC'} = $sheet-> Cells($i,$TASK_SRC)->{'Value'};
+		$TASK_INFO ->{$i} -> {'NICKNAME'} = $tmp_nickneme;
+		$TASK_INFO ->{$i} -> {'TASK_STATUS'} = $sheet-> Cells($i,$TASK_STATUS)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_TITLE'} = $sheet-> Cells($i,$TASK_TITLE)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_PER'} = $sheet-> Cells($i,$TASK_PER)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_CREATER'} = $sheet-> Cells($i,$TASK_CREATER)->{'Value'};;
+		$TASK_INFO ->{$i} -> {'TASK_CREATE_DATE'} = $sheet-> Cells($i,$TASK_CREATE_DATE)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_EXECUTER'} = $sheet-> Cells($i,$TASK_EXECUTER)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_TL'} = $tl;
+		$TASK_INFO ->{$i} -> {'TASK_PROCESS_DATE'} = $sheet-> Cells($i,$TASK_PROCESS_DATE)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_PLAN_DATE'} = $sheet-> Cells($i,$TASK_PLAN_DATE)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_NOTIFY_DATE'} = $sheet-> Cells($i,$TASK_NOTIFY_DATE)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_BUESSINESS_TYPE'} = $sheet-> Cells($i,$TASK_BUESSINESS_TYPE)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_ISSUESS_TYPE'} = $sheet-> Cells($i,$TASK_ISSUESS_TYPE)->{'Value'};
+		$TASK_INFO ->{$i} -> {'TASK_HAS_USERID'} = $sheet-> Cells($i,$TASK_HAS_USERID)->{'Value'};
 	}
 	$workbook -> Close({SaveChanges => 0});
 	
@@ -1514,67 +1507,61 @@ sub blank_report
 	my @orange = split("#", $BLANK_XLS_ORANGE);
 	my @green = split("#", $BLANK_XLS_GREEN);
 	my @purple = split("#", $BLANK_XLS_PURPLE);
-	@KEYS = sort { $a <=> $b } keys($TASK_INFO);
 	
 	# 表头
-	my @sheet_title = map {encode('gbk', $_)} (BLANK_STATUS_LIST);
-	my @person_title = ('花名','组别','非无效电话空白会员名','错误备注','错误占比');
-	my @person_title_gbk = map {encode('gbk',$_)} @person_title;
-	my @data_title = ('组别','有会员名','无效电话','非无效电话空白会员名','正确备注','错误备注','错误占比','错误备注抽检数');
-	my @data_title_gbk = map {encode('gbk',$_)} @data_title;
+	my @sheet_title_gbk = map {encode('gbk', $_)} (BLANK_STATUS_LIST);
+	my @person_title_gbk = map {encode('gbk',$_)} ('花名','组别','非无效电话空白会员名','错误备注','错误占比');
+	my @data_title_gbk = map {encode('gbk',$_)} ('组别','有会员名','无效电话','非无效电话空白会员名','正确备注','错误备注','错误占比','错误备注抽检数');
 	
 	# 生成
 	$workbook_rs = $excel -> Workbooks -> Add();
 	$sheet_rs =  $workbook_rs -> Worksheets(2);
 	$sheet_rs->{'NAME'} = encode('gbk','正确注解');
-
-	$sheet_rs -> Range('A1:Q1') -> {'Value'} = [@sheet_title];
+	$sheet_rs -> Range('A1:Q1') -> {'Value'} = [@sheet_title_gbk];
 	
 	# 边框
 	#$sheet_rs -> Range('A1:Q1') -> {Borders} -> {LineStyle} = 1;
 	#$sheet_rs -> Range('A1:Q1') -> {Borders} -> {Color} = 0x000000;
 	
-	# 数据格式
+	# 格式
 	$sheet_rs -> Columns('A') -> {'NumberFormatLocal'} = "@";
 	$sheet_rs -> Columns('B') -> {'NumberFormatLocal'} = "@";
-	#$sheet_rs -> Columns('H') -> {'NumberFormatLocal'} = "0.0%";
-	
+
+	@KEYS = sort { $a <=> $b } keys($TASK_INFO);
 	$tag = 2;
 	foreach my $key (@KEYS){
-		while (($k, $v)=each $TASK_INFO->{$key})
-		{
-			if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) or ($v->{'TASK_TITLE'} =~ /^\s*$/)) {
-				$sheet_rs -> Range("A$tag")->{'Value'} = $k;
-				$sheet_rs -> Range("B$tag")->{'Value'} = $v->{'ITEM_ID'};
-				$sheet_rs -> Range("C$tag")->{'Value'} = $v->{'TASK_SRC'};
-				$sheet_rs -> Range("D$tag")->{'Value'} = $v->{'NICKNAME'};
-				$sheet_rs -> Range("E$tag")->{'Value'} = $v->{'TASK_STATUS'};
-				$sheet_rs -> Range("F$tag")->{'Value'} = $v->{'TASK_TITLE'};
-				$sheet_rs -> Range("G$tag")->{'Value'} = $v->{'TASK_PER'};
-				$sheet_rs -> Range("H$tag")->{'Value'} = $v->{'TASK_CREATER'};
-				$sheet_rs -> Range("I$tag")->{'Value'} = $v->{'TASK_CREATE_DATE'};
-				$sheet_rs -> Range("J$tag")->{'Value'} = $v->{'TASK_EXECUTER'};
-				$sheet_rs -> Range("K$tag")->{'Value'} = $v->{'TASK_TL'};
-				$sheet_rs -> Range("L$tag")->{'Value'} = $v->{'TASK_PROCESS_DATE'};
-				$sheet_rs -> Range("M$tag")->{'Value'} = $v->{'TASK_PLAN_DATE'};
-				$sheet_rs -> Range("N$tag")->{'Value'} = $v->{'TASK_NOTIFY_DATE'};
-				$sheet_rs -> Range("O$tag")->{'Value'} = $v->{'TASK_BUESSINESS_TYPE'};
-				$sheet_rs -> Range("P$tag")->{'Value'} = $v->{'TASK_ISSUESS_TYPE'};
-				$sheet_rs -> Range("Q$tag")->{'Value'} = $v->{'TASK_HAS_USERID'};
-				if (map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) {
-					$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0x00C0FF;
-				} elsif (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) {
-					$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0x59BB9B;
-				} elsif (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) {
-					$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0xA03070;
-				}
-				$data->{$v->{'TASK_TL'}}->{1} += 1;
-				$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{1} += 1;	
-				$tag++;
-			} else {
-				$data->{$v->{'TASK_TL'}}->{3} += 1;
-				$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{3} += 1;
+		my $v = $TASK_INFO->{$key};
+		if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) or ($v->{'TASK_TITLE'} =~ /^\s*$/)) {
+			$sheet_rs -> Range("A$tag")->{'Value'} = $v->{'TASK_ID'};
+			$sheet_rs -> Range("B$tag")->{'Value'} = $v->{'ITEM_ID'};
+			$sheet_rs -> Range("C$tag")->{'Value'} = $v->{'TASK_SRC'};
+			$sheet_rs -> Range("D$tag")->{'Value'} = $v->{'NICKNAME'};
+			$sheet_rs -> Range("E$tag")->{'Value'} = $v->{'TASK_STATUS'};
+			$sheet_rs -> Range("F$tag")->{'Value'} = $v->{'TASK_TITLE'};
+			$sheet_rs -> Range("G$tag")->{'Value'} = $v->{'TASK_PER'};
+			$sheet_rs -> Range("H$tag")->{'Value'} = $v->{'TASK_CREATER'};
+			$sheet_rs -> Range("I$tag")->{'Value'} = $v->{'TASK_CREATE_DATE'};
+			$sheet_rs -> Range("J$tag")->{'Value'} = $v->{'TASK_EXECUTER'};
+			$sheet_rs -> Range("K$tag")->{'Value'} = $v->{'TASK_TL'};
+			$sheet_rs -> Range("L$tag")->{'Value'} = $v->{'TASK_PROCESS_DATE'};
+			$sheet_rs -> Range("M$tag")->{'Value'} = $v->{'TASK_PLAN_DATE'};
+			$sheet_rs -> Range("N$tag")->{'Value'} = $v->{'TASK_NOTIFY_DATE'};
+			$sheet_rs -> Range("O$tag")->{'Value'} = $v->{'TASK_BUESSINESS_TYPE'};
+			$sheet_rs -> Range("P$tag")->{'Value'} = $v->{'TASK_ISSUESS_TYPE'};
+			$sheet_rs -> Range("Q$tag")->{'Value'} = $v->{'TASK_HAS_USERID'};
+			if (map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) {
+				$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0x00C0FF;
+			} elsif (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) {
+				$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0x59BB9B;
+			} elsif (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) {
+				$sheet_rs -> Range("F$tag") -> {Interior} -> {Color} = 0xA03070;
 			}
+			$data->{$v->{'TASK_TL'}}->{1} += 1;
+			$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{1} += 1;	
+			$tag++;
+		} else {
+			$data->{$v->{'TASK_TL'}}->{3} += 1;
+			$data->{$v->{'TASK_TL'}}->{9}->{$v->{'TASK_CREATER'}}->{3} += 1;
 		}
 	}
 	
@@ -1601,36 +1588,34 @@ sub blank_report
 	# 错误注解
 	$sheet_rs =  $workbook_rs -> Worksheets(3);
 	$sheet_rs->{'NAME'} = encode('gbk','错误注解');
-	$sheet_rs -> Range('A1:Q1') -> {'Value'} = [@sheet_title];
+	$sheet_rs -> Range('A1:Q1') -> {'Value'} = [@sheet_title_gbk];
 	$sheet_rs -> Columns('A') -> {'NumberFormatLocal'} = "@";
 	$sheet_rs -> Columns('B') -> {'NumberFormatLocal'} = "@";
 	
 	$tag = 2;
 	foreach my $key (@KEYS){
-		while (($k, $v)=each $TASK_INFO->{$key})
-		{
-			if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) or ($v->{'TASK_TITLE'} =~ /^\s*$/)) {
-				next;
-			}
-			$sheet_rs -> Range("A$tag")->{'Value'} = $k;
-			$sheet_rs -> Range("B$tag")->{'Value'} = $v->{'ITEM_ID'};
-			$sheet_rs -> Range("C$tag")->{'Value'} = $v->{'TASK_SRC'};
-			$sheet_rs -> Range("D$tag")->{'Value'} = $v->{'NICKNAME'};
-			$sheet_rs -> Range("E$tag")->{'Value'} = $v->{'TASK_STATUS'};
-			$sheet_rs -> Range("F$tag")->{'Value'} = $v->{'TASK_TITLE'};
-			$sheet_rs -> Range("G$tag")->{'Value'} = $v->{'TASK_PER'};
-			$sheet_rs -> Range("H$tag")->{'Value'} = $v->{'TASK_CREATER'};
-			$sheet_rs -> Range("I$tag")->{'Value'} = $v->{'TASK_CREATE_DATE'};
-			$sheet_rs -> Range("J$tag")->{'Value'} = $v->{'TASK_EXECUTER'};
-			$sheet_rs -> Range("K$tag")->{'Value'} = $v->{'TASK_TL'};
-			$sheet_rs -> Range("L$tag")->{'Value'} = $v->{'TASK_PROCESS_DATE'};
-			$sheet_rs -> Range("M$tag")->{'Value'} = $v->{'TASK_PLAN_DATE'};
-			$sheet_rs -> Range("N$tag")->{'Value'} = $v->{'TASK_NOTIFY_DATE'};
-			$sheet_rs -> Range("O$tag")->{'Value'} = $v->{'TASK_BUESSINESS_TYPE'};
-			$sheet_rs -> Range("P$tag")->{'Value'} = $v->{'TASK_ISSUESS_TYPE'};
-			$sheet_rs -> Range("Q$tag")->{'Value'} = $v->{'TASK_HAS_USERID'};
-			$tag++;
+		my $v = $TASK_INFO->{$key};
+		if ((map {$v->{'TASK_TITLE'} =~ /$_/i} @orange) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @green) or (map {$v->{'TASK_TITLE'} =~ /$_/i} @purple) or ($v->{'TASK_TITLE'} =~ /^\s*$/)) {
+			next;
 		}
+		$sheet_rs -> Range("A$tag")->{'Value'} = $v->{'TASK_ID'};
+		$sheet_rs -> Range("B$tag")->{'Value'} = $v->{'ITEM_ID'};
+		$sheet_rs -> Range("C$tag")->{'Value'} = $v->{'TASK_SRC'};
+		$sheet_rs -> Range("D$tag")->{'Value'} = $v->{'NICKNAME'};
+		$sheet_rs -> Range("E$tag")->{'Value'} = $v->{'TASK_STATUS'};
+		$sheet_rs -> Range("F$tag")->{'Value'} = $v->{'TASK_TITLE'};
+		$sheet_rs -> Range("G$tag")->{'Value'} = $v->{'TASK_PER'};
+		$sheet_rs -> Range("H$tag")->{'Value'} = $v->{'TASK_CREATER'};
+		$sheet_rs -> Range("I$tag")->{'Value'} = $v->{'TASK_CREATE_DATE'};
+		$sheet_rs -> Range("J$tag")->{'Value'} = $v->{'TASK_EXECUTER'};
+		$sheet_rs -> Range("K$tag")->{'Value'} = $v->{'TASK_TL'};
+		$sheet_rs -> Range("L$tag")->{'Value'} = $v->{'TASK_PROCESS_DATE'};
+		$sheet_rs -> Range("M$tag")->{'Value'} = $v->{'TASK_PLAN_DATE'};
+		$sheet_rs -> Range("N$tag")->{'Value'} = $v->{'TASK_NOTIFY_DATE'};
+		$sheet_rs -> Range("O$tag")->{'Value'} = $v->{'TASK_BUESSINESS_TYPE'};
+		$sheet_rs -> Range("P$tag")->{'Value'} = $v->{'TASK_ISSUESS_TYPE'};
+		$sheet_rs -> Range("Q$tag")->{'Value'} = $v->{'TASK_HAS_USERID'};
+		$tag++;
 	}
 	$sheet_rs -> Rows -> {RowHeight} = 18;
 	$sheet_rs -> Columns -> {Font} -> {Name} = 'Calibri';
@@ -1642,7 +1627,6 @@ sub blank_report
 	$sheet_rs->{'NAME'} = encode('gbk','个人汇总');
 	$sheet_rs -> Range('A1:E1') -> {'Value'} = [@person_title_gbk];
 	$sheet_rs -> Columns('E') -> {'NumberFormatLocal'} = "0.00%";
-	
 	
 	my $tmp_sort_res;
 	my $tmp_res;
