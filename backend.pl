@@ -693,7 +693,7 @@ sub agent_report
 						$sheet_rs -> Range("AC$tag") -> {Font} -> {Color} = 0x0000FF;
 					}
 				} else {
-					my @vals = ($v->{'AcdAgentNotAnswering'}, $v->{'ACW'}, $v->{'ACW_Manual'}, $v->{'At_a_training_session'}, $v->{'Available'}, $v->{'Away_from_desk'}, $v->{'Call_Back'}, $v->{'Coaching'}, $v->{'Out_of_the_office'}, $v->{'Technical_Support'}, $v->{'Working_at_Home'});
+					my @vals = ($v->{'AcdAgentNotAnswering'}, $v->{'ACW'}, $v->{'ACW_Manual'}, $v->{'At_a_training_session'}, $v->{'Available'}, $v->{'Away_from_desk'}, $v->{'Call_Back'}, $v->{'Coaching'}, $v->{'Out_of_the_office'}, $v->{'In_a_meeting'}, $v->{'Technical_Support'}, $v->{'Working_at_Home'});
 					my @val = sort { $a <=> $b } @vals;
 					if ($v->{'AcdAgentNotAnswering'} eq $val[-1]) {
 						$usr_text = encode('gbk','ACD 影响');
@@ -724,6 +724,9 @@ sub agent_report
 					}
 					if ($v->{'Technical_Support'} eq $val[-1]) {
 						$usr_text = encode('gbk','Technical Support 影响');
+					}
+					if ($v->{'In_a_meeting'} eq $val[-1]) {
+						$usr_text = encode('gbk','In a meeting 影响');
 					}
 					if ($v->{'Working_at_Home'} eq $val[-1]) {
 						$usr_text = encode('gbk','Working at Home 影响，请所属TL跟进');
@@ -1126,12 +1129,12 @@ sub callback_report
 	$sheet_rs -> Range("E$line1")->{'Value'} = "=SUM(E2:E$line2)";
 	$sheet_rs -> Range("F$line1")->{'Value'} = "=SUMPRODUCT(E2:E$line2,F2:F$line2)/E$line1";
 	$sheet_rs -> Range("G$line1")->{'Value'} = "=SUM(G2:G$line2)";
-	$sheet_rs -> Range("H$line1")->{'Value'} = "=AVERAGE(H2:H$line2)";
+	$sheet_rs -> Range("H$line1")->{'Value'} = "=(E$line1*F$line1)/G$line1";
 	$sheet_rs -> Range("I$line1")->{'Value'} = "=SUM(I2:I$line2)";
 	$sheet_rs -> Range("J$line1")->{'Value'} = "=SUM(J2:J$line2)";
 	$sheet_rs -> Range("K$line1")->{'Value'} = "=SUM(K2:K$line2)";
 	$sheet_rs -> Range("L$line1")->{'Value'} = "=SUM(L2:L$line2)";
-	$sheet_rs -> Range("M$line1")->{'Value'} = "=AVERAGE(M2:M$line2)";
+	$sheet_rs -> Range("M$line1")->{'Value'} = "=SUMPRODUCT(K2:K$line2,M2:M$line2)/K$line1";
 	$sheet_rs -> Range("N$line1")->{'Value'} = "=SUM(N2:N$line2)";
 	$sheet_rs -> Range("O$line1")->{'Value'} = "=SUM(O2:O$line2)";
 	$sheet_rs -> Range("P$line1")->{'Value'} = "=O$line1/I$line1";
